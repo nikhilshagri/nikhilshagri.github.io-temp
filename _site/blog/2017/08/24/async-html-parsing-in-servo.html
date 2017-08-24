@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Off main thread HTML parsing in Servo</title>
+  <meta name="description" content="Introduction Traditionally, browsers have been written as single threaded applications, and the html spec certainly seems to validate this statement. This ma...">
+
+  <link rel="stylesheet" href="/assets/main.css">
+  <link rel="canonical" href="http://localhost:4000/blog/2017/08/24/async-html-parsing-in-servo.html">
+  <link rel="alternate" type="application/rss+xml" title="cynicaldevil&#39;s blog" href="/feed.xml">
+  
+  
+</head>
+
+
+  <body>
+
+    <header class="site-header" role="banner">
+
+  <div class="wrapper">
+    
+    
+    <a class="site-title" href="/">cynicaldevil&#39;s blog</a>
+  
+    
+      <nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+              <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+              <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger">
+          
+            
+            
+          
+            
+            
+            <a class="page-link" href="/about/">About</a>
+            
+          
+            
+            
+          
+            
+            
+          
+            
+            
+          
+        </div>
+      </nav>
+    
+  </div>
+</header>
+
+
+    <main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">Off main thread HTML parsing in Servo</h1>
+    <p class="post-meta">
+      <time datetime="2017-08-24T00:11:57+05:30" itemprop="datePublished">
+        
+        Aug 24, 2017
+      </time>
+      </p>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <h2 id="introduction">Introduction</h2>
+<p>Traditionally, browsers have been written as single threaded applications, and the html spec certainly seems
+to validate this statement. This makes it difficult to parallelize any task which a browser carries out, and
+we generally have to come up with innovative ways to do so.</p>
+
+<p>One such task is HTML parsing, and I have been working on parallelizing it this summer as part of my GSoC
+project. Since Servo is written in Rust, I’m assuming the reader has some basic knowledge about Rust.
+If not, check out this awesome <a href="https://doc.rust-lang.org/book/second-edition/">Rust book</a>. Done? Let’s dive straight into the details:</p>
+
+<h3 id="html-parser">HTML Parser</h3>
+<p>Servo’s HTML (and XML) parsing code live in <a href="https://github.com/servo/html5ever">html5ever</a>. Since this project concerns HTML parsing, I will only be talking about that. The first component we need to know about is the <code class="highlighter-rouge">Tokenizer</code>. This component is responsible for taking in raw input from a buffer and creating tokens, eventually sending them to its Sink, which we will call <code class="highlighter-rouge">TokenSink</code>. This could be any type which implements the <code class="highlighter-rouge">TokenSink</code> trait.</p>
+
+<p>html5ever has a type called <code class="highlighter-rouge">TreeBuilder</code>, which implements this trait. The TreeBuilder’s job is to create tree operations based on the tokens it receives. TreeBuilder contains its own Sink, called <a href="https://doc.servo.org/markup5ever/interface/tree_builder/trait.TreeSink.html">TreeSink</a>, which details the methods corresponding to these tree ops. The TreeBuilder calls these <code class="highlighter-rouge">TreeSink</code> methods under appropriate conditions, and these ‘action methods’ are responsible for constructing the DOM tree.</p>
+
+<p>With me so far? Good. The key to parallelizing HTML parsing is realizing that the task of creating tree ops is independent from the task of <em>actually</em> executing them to construct the DOM tree. Therefore, tokenization and tree op creation can happen on a separate thread, while the tree construction can be done on the main thread itself.</p>
+
+<p><img src="../../../../assets/parsing_diagram.png" alt="Example image" class="img-responsive" /></p>
+
+<h3 id="the-process">The Process</h3>
+<p>The first step I took was to decouple tree op creation from tree construction. Previously, tree ops were executed as soon as they were created. This involved the creation of a new <a href="https://github.com/servo/servo/blob/master/components/script/dom/servoparser/async_html.rs#L512">TreeSink</a>, which instead of executing them directly, created a <a href="https://github.com/servo/servo/blob/master/components/script/dom/servoparser/async_html.rs#L59-L105">representation</a> of a tree op, containing all relevant data. For the time being, I sent the tree op to a <code class="highlighter-rouge">process_op</code> function as soon as it was created, whereupon it was executed.</p>
+
+<p>Now that these two processes were independent, my next task consisted of creating a new thread, where the Tokenizer+TreeBuilder pair would live, to generate these tree ops. Now, when a tree op was created, it would be sent to the main thread, and control would return back to the TreeBuilder. The TreeBuilder does not have to wait for the execution of the tree op anymore, thus speeding up the entire process.</p>
+
+<p>So far so good. The final task in this project was to implement speculative parsing, by building on top of these recent changes.</p>
+
+<h3 id="speculative-parsing">Speculative Parsing</h3>
+<p>The HTML spec dictates that at any point during parsing, if we encounter a script tag, then the script must be executed immediately (if it is an inline script), or must be fetched and then executed (note that this rule does not apply to <code class="highlighter-rouge">async</code> or <code class="highlighter-rouge">defer</code> scripts). Why, you might ask, must this be done so? Why can’t we mark these scripts and execute them all at the end, after the parsing is done? This is because of an old, ill-thought out <code class="highlighter-rouge">Document</code> API function called <code class="highlighter-rouge">document.write()</code>. This function is a pain point for many developers who work on browsers, as it is a real headache implementing it well enough, while working around the many idiosyncrasies which surround it. I won’t dive into the details here, as they are not relevant. All we need to know is what <code class="highlighter-rouge">document.write()</code> does: it takes a string argument, which is generally markup, and inserts this string as part of the document’s HTML content. It is suffice to say that using this function might break your page, and should not be used.</p>
+
+<p>Returning to the parsing task, we can’t commit any DOM manipulations until the script finishes executing, because <code class="highlighter-rouge">document.write()</code> could make them redundant. What speculative parsing aims to do is to continue parsing the content after the script tag in the parser thread, while the script is being executed in the main thread. Note that we are only speculatively creating tree ops here, not the actual tree construction. After the script finishes executing, we analyze the actions of the <code class="highlighter-rouge">document.write()</code> calls (if any) to determine whether to use the tree ops, or to throw them away.</p>
+
+<h3 id="roadblock">Roadblock!</h3>
+<p>Remember when I said the process of creating tree ops is independent from tree construction? Well, I lied a little. Until a week ago, we need access to some DOM nodes for the creation of a couple of tree actions (one method needed to know if a node had a parent, and the other needed to know whether two nodes existed in the same tree). When I moved the task of creating tree ops to a separate thread, I could no longer access the DOM tree, which lived on the main thread. So I used a <code class="highlighter-rouge">Sender</code> on the TreeSink to create and send <a href="https://github.com/servo/servo/pull/17565/files#diff-10b46cb1e26142d2058e291de25bd4c7R133">queries</a> to the main thread, which would access the DOM and send the results back. Then only would the TreeSink method return, with the data it received from the main thread. Additionally, this meant that these couple of methods were synchronous in nature. No biggie.</p>
+
+<p>I realized the problem when I sat down to think about how I would implement speculative parsing. Since the main thread is busy executing scripts, it won’t be listening to the queries these synchronous methods will be sending, and therefore the task of creating tree ops cannot progress further!</p>
+
+<p>This turned out to be a bigger problem than I’d imagined, and I also had to sift through the equivalent Gecko code to understand how this situation was handled. I eventually came up with a good solution, but I won’t bore you with the details. If you want to know more, here’s a <a href="https://gist.github.com/cynicaldevil/09fb8a6dd1db58852d2085ac59ca0f9b">gist</a> explaining the solution.</p>
+
+<p>With these changes landed in html5ever, I can finally implement speculative parsing. Unfortunately, there’s not much time to implement it as a part of the GSoC project, so I will be landing this feature in Servo some time later. I hope to publish another blog post describing it thoroughly, along with details on the performance improvements this feature would bring.</p>
+
+<h4 id="links-to-important-prs">Links to important PRs:</h4>
+<p>Added Async HTML Tokenizer: <a href="https://github.com/servo/servo/pull/17037">https://github.com/servo/servo/pull/17037</a></p>
+
+<p>Run the async HTML Tokenizer on a new thread: <a href="https://github.com/servo/servo/pull/17914">https://github.com/servo/servo/pull/17914</a></p>
+
+<p>TreeBuilder no longer relies on <code class="highlighter-rouge">same_tree</code> and <code class="highlighter-rouge">has_parent_node</code>: <a href="https://github.com/servo/html5ever/pull/300">https://github.com/servo/html5ever/pull/300</a></p>
+
+<p>End TreeBuilder’s reliance on DOM: <a href="https://github.com/servo/servo/pull/18056">https://github.com/servo/servo/pull/18056</a></p>
+
+<h2 id="conclusion">Conclusion</h2>
+<p>This was a really fun project; I got solve lots of cool problems, and also learnt a lot more about how a modern, spec-compliant rendering engine works.</p>
+
+<p>I would like to thank my mentor <a href="https://twitter.com/nokusu">Anthony Ramine</a>, who was absolutely amazing to work with, and <a href="https://twitter.com/lastontheboat">Josh Matthews</a>, who helped me a lot when I was still a rookie looking to contribute to the project.</p>
+
+
+  </div>
+
+  
+</article>
+
+      </div>
+    </main>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">cynicaldevil&#39;s blog</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li>
+            
+              cynicaldevil&#39;s blog
+            
+            </li>
+            
+            <li><a href="mailto:nikhilshagri@gmail.com">nikhilshagri@gmail.com</a></li>
+            
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+            <a href="https://github.com/cynicaldevil"><span class="icon icon--github"><svg viewBox="0 0 16 16" width="16px" height="16px"><path fill="#828282" d="M7.999,0.431c-4.285,0-7.76,3.474-7.76,7.761 c0,3.428,2.223,6.337,5.307,7.363c0.388,0.071,0.53-0.168,0.53-0.374c0-0.184-0.007-0.672-0.01-1.32 c-2.159,0.469-2.614-1.04-2.614-1.04c-0.353-0.896-0.862-1.135-0.862-1.135c-0.705-0.481,0.053-0.472,0.053-0.472 c0.779,0.055,1.189,0.8,1.189,0.8c0.692,1.186,1.816,0.843,2.258,0.645c0.071-0.502,0.271-0.843,0.493-1.037 C4.86,11.425,3.049,10.76,3.049,7.786c0-0.847,0.302-1.54,0.799-2.082C3.768,5.507,3.501,4.718,3.924,3.65 c0,0,0.652-0.209,2.134,0.796C6.677,4.273,7.34,4.187,8,4.184c0.659,0.003,1.323,0.089,1.943,0.261 c1.482-1.004,2.132-0.796,2.132-0.796c0.423,1.068,0.157,1.857,0.077,2.054c0.497,0.542,0.798,1.235,0.798,2.082 c0,2.981-1.814,3.637-3.543,3.829c0.279,0.24,0.527,0.713,0.527,1.437c0,1.037-0.01,1.874-0.01,2.129 c0,0.208,0.14,0.449,0.534,0.373c3.081-1.028,5.302-3.935,5.302-7.362C15.76,3.906,12.285,0.431,7.999,0.431z"/></svg>
+</span><span class="username">cynicaldevil</span></a>
+
+          </li>
+          
+
+          
+          <li>
+            <a href="https://twitter.com/cynicaldevil_"><span class="icon icon--twitter"><svg viewBox="0 0 16 16" width="16px" height="16px"><path fill="#828282" d="M15.969,3.058c-0.586,0.26-1.217,0.436-1.878,0.515c0.675-0.405,1.194-1.045,1.438-1.809c-0.632,0.375-1.332,0.647-2.076,0.793c-0.596-0.636-1.446-1.033-2.387-1.033c-1.806,0-3.27,1.464-3.27,3.27 c0,0.256,0.029,0.506,0.085,0.745C5.163,5.404,2.753,4.102,1.14,2.124C0.859,2.607,0.698,3.168,0.698,3.767 c0,1.134,0.577,2.135,1.455,2.722C1.616,6.472,1.112,6.325,0.671,6.08c0,0.014,0,0.027,0,0.041c0,1.584,1.127,2.906,2.623,3.206 C3.02,9.402,2.731,9.442,2.433,9.442c-0.211,0-0.416-0.021-0.615-0.059c0.416,1.299,1.624,2.245,3.055,2.271 c-1.119,0.877-2.529,1.4-4.061,1.4c-0.264,0-0.524-0.015-0.78-0.046c1.447,0.928,3.166,1.469,5.013,1.469 c6.015,0,9.304-4.983,9.304-9.304c0-0.142-0.003-0.283-0.009-0.423C14.976,4.29,15.531,3.714,15.969,3.058z"/></svg>
+</span><span class="username">cynicaldevil_</span></a>
+
+          </li>
+          
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <p>My blog.
+</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>
