@@ -4,7 +4,7 @@ disqus:
   disqus_shortname: 'https-lenpaul-github-io-lagrange'
 
 # If you are not using Google Analytics, please change 'google-ID' to an empty string
-google-ID: 'UA-112060364-1'
+google-ID: ''
 
 menu:
 - {name: 'About', path: 'menu', url: 'about.html'}
@@ -29,4 +29,4 @@ sharing_button_prompt: 'Feel free to share!'
 
 related_posts: 'You may also enjoy:'
 
-post_date_prefix: 'Written on'
+post_date_prefix: ''
