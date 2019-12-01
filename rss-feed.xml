@@ -1,27 +1,40 @@
----
----
 <?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/">
 	<channel>
-		<title>{{ site.title | xml_escape }}</title>
-		<description>{% if site.description %}{{ site.description | xml_escape }}{% endif %}</description>
-		<link>{{ site.github.url }}</link>
-		<atom:link href="{{ site.github.url }}/{{ page.path }}" rel="self" type="application/rss+xml" />
-		{% for post in site.posts limit:10 %}
+		<title>Lagrange</title>
+		<description>a minimalist Jekyll theme</description>
+		<link></link>
+		<atom:link href="/rss-feed.xml" rel="self" type="application/rss+xml" />
+		
 			<item>
-				<title>{{ post.title | xml_escape }}</title>
-				{% if post.author %}
-					<dc:creator>{{ post.author | xml_escape }}</dc:creator>
-				{% endif %}
-				{% if post.excerpt %}
-					<description>{{ post.excerpt | xml_escape }}</description>
-				{% else %}
-					<description>{{ post.content | xml_escape }}</description>
-				{% endif %}
-				<pubDate>{{ post.date | date_to_rfc822 }}</pubDate>
-				<link>{{ site.url }}{{ post.url }}</link>
-				<guid isPermaLink="true">{{ site.url }}{{ post.url }}</guid>
+				<title>Oracle separation of PSPACE and PH</title>
+				
+				
+					<description>&lt;h2 id=&quot;introduction&quot;&gt;Introduction&lt;/h2&gt;
+&lt;p&gt;An important aspect of complexity theory is to try and find separations between different complexity classes. That is, to show that two complexity classes are not equal. One type of separation is a strict containment. It turns out that it is easier to prove containments (for example, give two complexity classes &lt;script type=&quot;math/tex&quot;&gt;A&lt;/script&gt; and &lt;script type=&quot;math/tex&quot;&gt;&lt;/script&gt;, to show that &lt;script type=&quot;math/tex&quot;&gt;A \subseteq B&lt;/script&gt;, or the opposite, whichever one is true) but to show a strict containment (&lt;script type=&quot;math/tex&quot;&gt;A \subset B&lt;/script&gt;) is more difficult (&lt;script type=&quot;math/tex&quot;&gt;\mathbf{P}&lt;/script&gt; vs &lt;script type=&quot;math/tex&quot;&gt;\mathbf{NP}&lt;/script&gt; being the best example of this). Obviously, a strict containment implies a separation between the two classes, but a containment doesn’t.&lt;/p&gt;
+
+</description>
+				
+				<pubDate>Sun, 01 Dec 2019 00:00:00 +0530</pubDate>
+				<link>http://localhost:4000/blog/oracle-sep.html</link>
+				<guid isPermaLink="true">http://localhost:4000/blog/oracle-sep.html</guid>
 			</item>
-		{% endfor %}
+		
+			<item>
+				<title>Off main thread HTML parsing in Servo</title>
+				
+				
+					<description>&lt;h2 id=&quot;introduction&quot;&gt;Introduction&lt;/h2&gt;
+&lt;p&gt;Traditionally, browsers have been written as single threaded applications, and the html spec certainly seems
+to validate this statement. This makes it difficult to parallelize any task which a browser carries out, and
+we generally have to come up with innovative ways to do so.&lt;/p&gt;
+
+</description>
+				
+				<pubDate>Thu, 24 Aug 2017 00:11:57 +0530</pubDate>
+				<link>http://localhost:4000/blog/async-html-parsing-in-servo.html</link>
+				<guid isPermaLink="true">http://localhost:4000/blog/async-html-parsing-in-servo.html</guid>
+			</item>
+		
 	</channel>
 </rss>

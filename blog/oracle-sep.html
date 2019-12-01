@@ -1,0 +1,307 @@
+<!doctype html>
+<html>
+
+<head>
+
+  <title>
+    
+      Oracle separation of PSPACE and PH | Lagrange
+    
+  </title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="utf-8">
+
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="stylesheet" href="/assets/css/syntax.css">
+  <!-- Use Atom -->
+  <link type="application/atom+xml" rel="alternate" href="http://localhost:4000/feed.xml" title="Lagrange" />
+  <!-- Use RSS-2.0 -->
+  <!--<link href="/rss-feed.xml" type="application/rss+xml" rel="alternate" title="Lagrange | a minimalist Jekyll theme"/>
+  //-->
+
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700%7CPT+Sans:400">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Code+Pro">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Quattrocento+Sans">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+  <script type="text/javascript" async
+    src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+  </script>
+
+
+  <!-- Use Jekyll SEO plugin -->
+  <!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>Oracle separation of PSPACE and PH | Lagrange</title>
+<meta name="generator" content="Jekyll v3.6.3" />
+<meta property="og:title" content="Oracle separation of PSPACE and PH" />
+<meta name="author" content="Paul Le" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Introduction An important aspect of complexity theory is to try and find separations between different complexity classes. That is, to show that two complexity classes are not equal. One type of separation is a strict containment. It turns out that it is easier to prove containments (for example, give two complexity classes and , to show that , or the opposite, whichever one is true) but to show a strict containment () is more difficult ( vs being the best example of this). Obviously, a strict containment implies a separation between the two classes, but a containment doesn’t." />
+<meta property="og:description" content="Introduction An important aspect of complexity theory is to try and find separations between different complexity classes. That is, to show that two complexity classes are not equal. One type of separation is a strict containment. It turns out that it is easier to prove containments (for example, give two complexity classes and , to show that , or the opposite, whichever one is true) but to show a strict containment () is more difficult ( vs being the best example of this). Obviously, a strict containment implies a separation between the two classes, but a containment doesn’t." />
+<link rel="canonical" href="http://localhost:4000/blog/oracle-sep.html" />
+<meta property="og:url" content="http://localhost:4000/blog/oracle-sep.html" />
+<meta property="og:site_name" content="Lagrange" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2019-12-01T00:00:00+05:30" />
+<script type="application/ld+json">
+{"headline":"Oracle separation of PSPACE and PH","dateModified":"2019-12-01T00:00:00+05:30","datePublished":"2019-12-01T00:00:00+05:30","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/blog/oracle-sep.html"},"url":"http://localhost:4000/blog/oracle-sep.html","author":{"@type":"Person","name":"Paul Le"},"description":"Introduction An important aspect of complexity theory is to try and find separations between different complexity classes. That is, to show that two complexity classes are not equal. One type of separation is a strict containment. It turns out that it is easier to prove containments (for example, give two complexity classes and , to show that , or the opposite, whichever one is true) but to show a strict containment () is more difficult ( vs being the best example of this). Obviously, a strict containment implies a separation between the two classes, but a containment doesn’t.","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+
+</head>
+
+
+<body>
+
+  <div class="container">
+    <header class="masthead">
+  <h3 class="masthead-title">
+    <!-- <a href="/">Lagrange</a> -->
+    <small class="masthead-subtitle">My blog</small>
+    <div class="menu">
+  <nav class="menu-content">
+    
+      <a href="/menu/about.html">About</a>
+    
+      <a href="/menu/writing.html">Writing</a>
+    
+      <a href="/menu/contact.html">Contact</a>
+    
+  </nav>
+</div>
+
+  </h3>
+</header>
+
+
+    <div class="post-container">
+      <h1>
+  Oracle separation of PSPACE and PH
+</h1>
+
+
+
+
+<span class="post-date">
+  
+  
+  December
+  1st
+    ,
+  2019
+
+</span>
+<h2 id="introduction">Introduction</h2>
+<p>An important aspect of complexity theory is to try and find separations between different complexity classes. That is, to show that two complexity classes are not equal. One type of separation is a strict containment. It turns out that it is easier to prove containments (for example, give two complexity classes <script type="math/tex">A</script> and <script type="math/tex"></script>, to show that <script type="math/tex">A \subseteq B</script>, or the opposite, whichever one is true) but to show a strict containment (<script type="math/tex">A \subset B</script>) is more difficult (<script type="math/tex">\mathbf{P}</script> vs <script type="math/tex">\mathbf{NP}</script> being the best example of this). Obviously, a strict containment implies a separation between the two classes, but a containment doesn’t.</p>
+
+<p>So if strict containments are harder to prove, what can we do? One strategy is to try to solve a simpler, related problem: oracle separations. Oracle separations do not imply an actual separation between classes, but one can think of them as a ‘necessary condition’ for it. That is, if a separation indeed exists between two complexity classes, then there definitely exists an oracle separation between them.</p>
+
+<p>The paper I’m going to describe in this post shows an oracle separation between the classes <script type="math/tex">\mathbf{PH}</script> and  <script type="math/tex">\mathbf{PSPACE}</script>, by proving a lower bound on a certain type of boolean circuits, which was a completely original idea at that time. Since then, others have used the idea to show many other interesting results too.</p>
+
+<h2 id="main-result">Main result</h2>
+<p>The main result which is going to be discussed here is that if the <script type="math/tex">\mathbf{AC^0}</script> circuit (polynomial sized <a href="https://en.wikipedia.org/wiki/Boolean_circuit">boolean circuits</a> with constant depth, unbounded fan-in) which computes the parity function has size <script type="math/tex">\Omega(n^{log^k(n)})</script>, then there exists an oracle <script type="math/tex">\mathbf{O}</script> relative to which <script type="math/tex">\mathbf{PH^O} \subset \mathbf{PSPACE^O}</script>. The paper also goes on to show that the parity function indeed requires a <script type="math/tex">\Omega(n^{log^k(n)})</script> sized circuit to compute, but the proof shown in this paper is relatively complicated. I will probably do another post discussing an alternative proof, which uses Hastad’s Switching Lemma.</p>
+
+<h2 id="complexity-theory-a-primer">Complexity theory: a primer</h2>
+
+<p>As the name suggests, complexity theory is about the study of ‘complexity’ of problems. Problems like sorting, shortest path, travelling salesman, or SAT. So how do we define how ‘complex’ a problem is? We need a quantifiable measure, in order to compare it with other problems. One measure is the time taken to correctly compute the solution, given some input. But think about the variables involved here. Surely an algorithm which brute forces its way to the solution, when executed on a speedy brand new processor will execute in less time than a super efficient algorithm running on some 90s era Pentium chip? And what about the language in which we have written the algorithm in? And the compiler used? Would forgetting to specify the <code class="highlighter-rouge">-O3</code> flag during compilation somehow increase the complexity of the program, because it takes more time to execute?</p>
+
+<p>To ‘normalize’ away all these differences, we consider the number of steps taken by the ‘fastest, correct’ algorithm to be the time complexity of the problem. The number of steps required would be a function of the input size, which is usually some natural number, denoted by <script type="math/tex">n</script>. One way of looking at the input size is the number of bits required to completely specify the input for the problem.</p>
+
+<p>Also, intuitively one can deduce the fact that the number of steps required will increase as the input size increases. Which means we can represent the time complexity of problems using monotonically increasing functions.</p>
+
+<p>Complexity theory is more generally concerned with grouping problems of similar complexities together, so that it is easier to characterize them, and compare them with other problems. These groups are what we call complexity classes. One such class, referred to as <script type="math/tex">\mathbf{P}</script>, includes all such problems having time complexity  which look like <script type="math/tex">n^2</script>, or <script type="math/tex">n^3</script>, or <script type="math/tex">n^4</script>… multiplied by a fixed constant. Generally, this fixed constant is the normalization part, and is generally ignored while talking about a problem’s complexity. Another class, known as <script type="math/tex">\mathbf{NP}</script>, is the class of efficiently ‘verifiable’ problems.</p>
+
+<p>For a better understanding of the <script type="math/tex">\mathbf{P}</script> and <script type="math/tex">\mathbf{NP}</script> classes, take a look at these <a href="http://people.cs.georgetown.edu/~cnewport/teaching/cosc240-fall18/psets/complexity-notes.pdf">lecture notes</a> which cover them, and provide their formal definitions alongside.</p>
+
+<p>Note: One point which the notes don’t mention is that for every string in a language which belongs to <script type="math/tex">\mathbf{NP}</script>, the corresponding certificate is of size polynomial in the string’s length.</p>
+
+<h3 id="conp">coNP</h3>
+<p>A language’s (say, <script type="math/tex">L</script>) complement (denoted by <script type="math/tex">\overline{L}</script>) is the set of all strings which don’t belong to <script type="math/tex">L</script>. Suppose <script type="math/tex">L</script> is the set of all graphs (or more precisely, the binary representation of such graphs) which have a <a href="https://en.wikipedia.org/wiki/Vertex_cover">vertex cover</a> of size at most <script type="math/tex">k</script>. Then <script type="math/tex">\overline{L}</script> consists of all strings other than those present in <script type="math/tex">L</script>. It will mostly contain binary strings which do not have a valid interpretation as a graph, and among the valid strings, the corresponding graphs will have vertex covers of size more than <script type="math/tex">k</script>.</p>
+
+<p>We say that <script type="math/tex">\overline{L}</script> belongs to <script type="math/tex">\mathbf{coNP}</script> if <script type="math/tex">L</script> belongs to  <script type="math/tex">\mathbf{NP}</script>. The most famous example of a language in <script type="math/tex">\mathbf{coNP}</script> is <script type="math/tex">\overline{SAT}</script>, which consists of all boolean formulae not having even a single satisfying assignment ((<script type="math/tex">x_1 \wedge \overline{x_1})</script> being an example). Languages belonging to <script type="math/tex">\mathbf{coNP}</script> don’t have a short certificate (that we know of) that provides a ‘proof of membership’, as in the case of <script type="math/tex">\mathbf{NP}</script>. The formal definition of <script type="math/tex">\mathbf{coNP}</script> is as follows:</p>
+
+<script type="math/tex; mode=display">x \in L \iff \forall u \text{ } M(x, u) = 1</script>
+
+<p>Where <script type="math/tex">L</script> is a language belonging to <script type="math/tex">\mathbf{coNP}</script>, and <script type="math/tex">u</script> is a variable meant to represent all possible certificates.</p>
+
+<h3 id="pspace">PSPACE</h3>
+<p>This complexity class encapsulates the problems which are solvable by a machine with a polynomial amount of space. There’s no restriction on the time taken to solve the problem, as long as the number of steps taken is finite. It is easy to see how this class encapsulates <script type="math/tex">\mathbf{NP}</script>: simulate a verifier for the problem, cycle through all possible certificates (its length at most polynomial in the input size, so given an input of size <script type="math/tex">n</script>, there exist at most <script type="math/tex">2^{p(n)}</script> certificates, where <script type="math/tex">p</script> is some univariate polynomial), and in each cycle, feed the certificate and the input to the verfier. If the verifier accepts for a particular certificate, then accept. Else, if it cycles through all possible certificates and doesn’t accept on any of them, reject.</p>
+
+<h3 id="polynomial-hierarchy-ph">Polynomial Hierarchy (PH)</h3>
+<p>This class, often denoted by <script type="math/tex">\mathbf{PH}</script>, encompasses those problems which the classes <script type="math/tex">\mathbf{NP}</script> and <script type="math/tex">\mathbf{coNP}</script> are unable to characterize. For instance, consider the <script type="math/tex">MAX-INDSET</script> problem. Given a graph, an independent set is a subset of vertices such that no two vertices in the subset are adjacent to each other. The <script type="math/tex">MAX-INDSET</script> problem is concerned with finding the largest independent set for a given graph.</p>
+
+<p>Now, consider the related decision problem. Note that the input has two parts: a description of graph G, and an integer k:</p>
+
+<script type="math/tex; mode=display">INDSET = \{ \langle G, k \rangle: \text{G has an independent set of size at least k}\}</script>
+
+<p>There exists a short certificate for every valid solution to this problem, namely, the independent set itself. Verifying it is a simple matter of checking that it is of size at least <script type="math/tex">k</script>, and that it forms an independent set, both of which can be done in polynomial time. Therefore this problem lies in <script type="math/tex">\mathbf{NP}</script>.</p>
+
+<p>We can go even further and devise a modification of this problem:</p>
+
+<script type="math/tex; mode=display">\text{EXACT-INDSET} = \{ \langle G, k \rangle: \text{The largest independent set (LIS) of G has size exactly k}\}</script>
+
+<p>It is not clear whether the definitions of <script type="math/tex">\mathbf{NP}</script> or <script type="math/tex">\mathbf{coNP}</script> are enough to characterize this problem. We can find another way to formulate the same problem, though:</p>
+
+<p><script type="math/tex">\text{EXACT-INDSET} = \{ \langle G, k \rangle:</script>
+There exists an independent set of size k, and every subset which is of size more than k is not an independent set <script type="math/tex">\}</script></p>
+
+<p>More formally, this can be written as:</p>
+
+<script type="math/tex; mode=display">\text{EXACT-INDSET} = \{ x := \langle G, k \rangle: \exists u\text{ } \forall v \text{ s.t. } M(x, u, v) = 1 \}</script>
+
+<p>Where <script type="math/tex">u</script> represents the independent set of size <script type="math/tex">k</script>, and <script type="math/tex">v</script> denotes a subset of vertices of size more than <script type="math/tex">k</script>, and <script type="math/tex">M</script> is a function denoting a polynomial time Turing machine computation (it’s ok if you don’t know what a Turing Machine is, just think of it as a formal definition of an ordinary computer system).</p>
+
+<p>Now, we must ensure that <script type="math/tex">M</script>, given an input <script type="math/tex">x</script>, along with <script type="math/tex">u</script> and <script type="math/tex">v</script> as defined, carries out a computation which captures the essence of the problem. This can be done if we configure <script type="math/tex">M</script> to compute the following things (note that all these operations can be done in polynomial time. This is important, the fact that M is a polynomial time machine: it’s where the complexity class derives its name from!) :</p>
+
+<ul>
+  <li>Ensure that <script type="math/tex">u</script> is of size <script type="math/tex">k</script>, and that it is indeed an independent set.</li>
+  <li>Similarly, ensure that <script type="math/tex">v</script> is of size more than <script type="math/tex">k</script>, and that it is not an independent set.</li>
+  <li>If for a given <script type="math/tex">x</script>, <script type="math/tex">u</script>, <script type="math/tex">v</script>, the two conditions mentioned above are satisfied, then output <script type="math/tex">1</script>. Else, output zero.</li>
+</ul>
+
+<p>We can create another program which given input <script type="math/tex">x</script>, and descriptions of the variables <script type="math/tex">u</script>, <script type="math/tex">v</script>, and a description of the behaviour of <script type="math/tex">M</script>, will cycle through all possible combinations of <script type="math/tex">u</script> and <script type="math/tex">v</script>, running the machine <script type="math/tex">M</script> for each combination.  and if it finds a particular <script type="math/tex">u</script> such that when combined with all possible <script type="math/tex">v</script>, <script type="math/tex">M</script> outputs 1 every single time, then we have found our solution.</p>
+
+<p>Else, if the LIS isn’t of exactly of size <script type="math/tex">k</script>, either of two cases are possible. The first case is that the LIS has size strictly lesser than <script type="math/tex">k</script>. In this event, the outer program won’t be able to find a suitable candidate for <script type="math/tex">u</script> at all, and the inner program will return zero each time. The second case is when the LIS has size strictly greater than <script type="math/tex">k</script>, whereupon we are guaranteed that for some <script type="math/tex">v</script> corresponding to that LIS, and for some subset of <script type="math/tex">v</script> of size equal to <script type="math/tex">k</script>, the inner computation will return zero. Thus we have defined a framework which completely characterizes the <script type="math/tex">EXACT-INDSET</script> problem. (Note that I have used the terms program, computation and machine interchangeably).</p>
+
+<p>It turns out that that this framework is applicable to many problems, and we have a name for it: <script type="math/tex">\Sigma_2^p</script>. The <script type="math/tex">\Sigma</script> indicates that the first quantifier is existential, the <script type="math/tex">2</script> indicating that we use two quantifiers, and the <script type="math/tex">p</script> simply saying that we are only using polynomial time computations (this does <strong>not</strong> mean that the problem is computable in polynomial time! Observe that we use an <em>exponential number</em> of polynomial time computations to characterize the input).</p>
+
+<p>We can define the class <script type="math/tex">\Pi_2^p</script> similarly. For any language <script type="math/tex">L \in \Pi_2^p</script>:</p>
+
+<script type="math/tex; mode=display">x \in L \iff \{\forall u \text{ } \exists v \text{ s.t. } M(x, u, v) = 1 \}</script>
+
+<p>The sizes of variables associated with the quantifiers that we’ve defined up until this point (and will define later) are polynomial in the size of the input.</p>
+
+<p>An example of a problem in <script type="math/tex">\Pi_2^p</script> is the <script type="math/tex">MIN-CNF</script> problem: given a <a href="https://en.wikipedia.org/wiki/Conjunctive_normal_form">3-CNF</a> boolean formula (each clause having three variables with two <script type="math/tex">OR</script> operators, the clauses themselves acted upon by <script type="math/tex">AND</script> operators), find an equivalent boolean formula having fewer clauses.</p>
+
+<p>This problem can be restated as follows: A 3-CNF boolean formula (more precisely, its string representation) lies in <script type="math/tex">MIN-CNF</script> iff for every 3-CNF  boolean formula having more clauses, there exists an assignment of inputs for which the two formulas give different outputs (that is, the two formulas are not equivalent). It is easy to see that <script type="math/tex">MIN-CNF \in \Pi_2^p</script>.</p>
+
+<p>We can now generalize the notion of <script type="math/tex">\Pi_2^p</script> and define the class <script type="math/tex">\Pi_i^p</script>. For any language <script type="math/tex">L \in \Pi_i^p</script>, the following holds:</p>
+
+<script type="math/tex; mode=display">x \in L \iff \{\forall u_1 \text{ } \exists u_2 \text{ } \forall u_3 \ldots Q_i u_i \text{ s.t. } M(x, u_1, u_2, u_3, \ldots, u_i) = 1 \}</script>
+
+<p>Where <script type="math/tex">Q_i</script> is an existential or a universal quantifier depending on whether <script type="math/tex">i</script> is even or odd. We can define <script type="math/tex">\Sigma_i^p</script> in a similar manner. Note that the quantifiers are alternating with one another, because if we had two quantifiers of the same type adjacent to one another, it is always possible to combine them.</p>
+
+<p>The complexity classes generated by the generalizations have some very neat relationships among them (they apply to all <script type="math/tex">i>0</script>):</p>
+
+<ol>
+  <li><script type="math/tex">\Pi_i^p \subseteq \Pi_{i+1}^p</script> (similarly for <script type="math/tex">\Sigma_{i}^p</script>)</li>
+  <li><script type="math/tex">\Sigma_i^p \subseteq \Pi_{i+1}^p</script> (similarly for <script type="math/tex">\Pi_{i}^p</script>)</li>
+  <li><script type="math/tex">\Pi_i^p = co\Sigma_i^p</script> (uses the fact that negation of an existential quantifier is a universal quantifier, and vice versa).</li>
+</ol>
+
+<p>And finally, after all these definitions, we arrive at the complexity class we’ve all been waiting for!</p>
+
+<script type="math/tex; mode=display">\mathbf{PH} = \bigcup_{i} \Sigma_i^p = \bigcup_{i} \Pi_i^p</script>
+
+<p>Okay, that was a bit anti-climatic. But <script type="math/tex">\mathbf{PH}</script> is an interesting class to study, as we shall soon see. The classes can be visualized in the form of a ladder. An arrow from a class <script type="math/tex">A</script> to class <script type="math/tex">B</script> indicates a containment (that is, <script type="math/tex">A \subseteq B</script>):</p>
+
+<p><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Polynomial_time_hierarchy.svg/800px-Polynomial_time_hierarchy.svg.png" alt="polynomial hierarchy" /></p>
+
+<p>(<script type="math/tex">\Delta_i^p</script> is just the intersection of <script type="math/tex">\Sigma_{i+1}^p</script> and <script type="math/tex">\Pi_{i+1}^p</script>, but we don’t need to be concerned with those.)</p>
+
+<p>The most amazing thing about <script type="math/tex">\mathbf{PH}</script> is that we don’t know whether <em>any</em> of these containments are strict or not (as I mentioned earlier, we are very bad at proving/disproving strict containments, and many believe we haven’t developed the requisite mathematical tools yet).</p>
+
+<p>We believe that all these containments are strict, for if it turns out that even one of the containments holds the other way as well (that is, both classes are one and the same), then the polynomial hierarchy ‘collapses’ to that level.</p>
+
+<p>Put more formally, it means that in the event that <script type="math/tex">\Sigma_{i+1}^p = \Sigma_i^p</script> holds for some particular <script type="math/tex">i</script>, then it would mean that <script type="math/tex">\Sigma_j^p = \Sigma_i^p</script> for all <script type="math/tex">j>i</script> (similarly for <script type="math/tex">\Pi_i^p</script>). In other words, the polynomial hierarchy collapses to level i. The other case where it would collapse is if <script type="math/tex">\Pi_i^p = \Sigma_i^p</script> for some <script type="math/tex">i</script>.</p>
+
+<p>It is unnatural that the polynomial hierarchy would collapse, since it definitely seems like we are getting more ‘power’ by adding more quantifiers. This is also one of the reasons why many believe that <script type="math/tex">\mathbf{P} \neq \mathbf{NP}</script>, and that <script type="math/tex">\mathbf{NP} \neq \mathbf{coNP}</script>.</p>
+
+<h4 id="relationship-between-pspace-and-ph">Relationship between PSPACE and PH</h4>
+<p>One would realize after a moment’s thought that <script type="math/tex">\mathbf{PH} \subseteq \mathbf{PSPACE}</script>, because you only need a polynomial amount of space to simulate the Turing Machine denoted by ‘<script type="math/tex">M</script>’ in the definitions, and a variable whose value you would toggle if a zero was outputted by one of the computations. Of course, as mentioned earlier, we don’t know whether this containment is strict or not.</p>
+
+<h2 id="oracles">Oracles</h2>
+<p>An Oracle Turing machine is a Turing machine with access to a certain oracle. Oracles are machines which solve the decision problem for some language <script type="math/tex">O</script> in just a single computational step, no matter how computationally hard <script type="math/tex">O</script> is (the oracle itself is denoted by <script type="math/tex">O</script> too). At any point during its computation, a TM can write down a string and ask the oracle, ‘does this string lie in O?’, and get back an answer in the very next step. It can query the oracle as many times as it wants to, on any random string of its choosing.</p>
+
+<p>By the definition, it is obvious that the oracle gives the TM some additional power, and also that the oracle is just a ‘convenience’ which allows us to black box the hardness of computing any particular language, and that it does not have any real world analogues.</p>
+
+<p>A few more definitions before we get to the next section (where I actually start discussing the paper (!)): a language is denoted by <script type="math/tex">L^O</script> if there is a TM with access to oracle <script type="math/tex">O</script> which decides <script type="math/tex">L</script>. The complexity class <script type="math/tex">\mathbf{P^O}</script> is defined as the set of all languages which can be decided by a polynomial time TM with access to oracle <script type="math/tex">O</script>. The analogues to other complexity classes are defined in a similar manner.</p>
+
+<p>As a reminder, the goal of the paper that I’m discussing here is to give some evidence for the belief that <script type="math/tex">\mathbf{PH} \subset \mathbf{PSPACE}</script>, and showing that <script type="math/tex">\mathbf{PH^O} \subset \mathbf{PSPACE^O}</script>, where <script type="math/tex">O</script> is some valid oracle, is one way of doing so, and this paper gives us such an oracle.</p>
+
+<h2 id="train-of-thought">Train of thought</h2>
+<p>We will first define a certain language which we’ll call <script type="math/tex">L^A</script> (the TM which decides this language has access to oracle A), and show that it lies in <script type="math/tex">\mathbf{PSPACE^A}</script>. Then we assume that <script type="math/tex">L^A \in \mathbf{PH^A}</script>, which means that there’s a level <script type="math/tex">i</script> in the polynomial hierarchy in which <script type="math/tex">L^A</script> is contained (<script type="math/tex">L^A \in \Sigma_i^{p, A}</script> for some <script type="math/tex">i</script>). Next, it is shown that given the previous assumption (<script type="math/tex">L^A \in \mathbf{PH^A}</script>), there must exist a <script type="math/tex">O(polylog(n))</script> circuit computing the parity function.</p>
+
+<p>But this is where it gets interesting! The second part of the paper (which I won’t be discussing) proves that a <script type="math/tex">O(polylog(n))</script> sized parity-computing circuit doesn’t exist, which means <script type="math/tex">L^A</script> is not in <script type="math/tex">\Sigma_i^{p, A}</script> for any <script type="math/tex">i</script>, which means <script type="math/tex">L^A \not\in \mathbf{PH^A}</script>. Thus, we will have proved that <script type="math/tex">\mathbf{PH^A} \subset \mathbf{PSPACE^A}</script>.</p>
+
+<h2 id="first-step-defining-la">First Step: Defining <script type="math/tex">L^A</script></h2>
+
+<script type="math/tex; mode=display">L^A = \{1^n | \text{Number of n-length strings in A is odd}\}</script>
+
+<p>Assume <script type="math/tex">A</script> to be some language. The language <script type="math/tex">L^A</script> is defined relative to the strings present in <script type="math/tex">A</script>. It only happens to contain at most one string of any given length, and if it does happen to contain a certain string of length <script type="math/tex">n</script>, then it will be made up of all ones. What is the condition under which <script type="math/tex">L^A</script> will contain an <script type="math/tex">n</script>-length, all-ones string? Only when the language A has an odd number of <script type="math/tex">n</script>-length strings in it.</p>
+
+<p>Right away, by looking at the definition of <script type="math/tex">L^A</script>, it seems obvious that it has some connection to the parity function. In fact, it has been defined such that it has this connection, which we’ll exploit later. What’s also obvious is that this language exists in <script type="math/tex">\mathbf{PSPACE^A}</script>. Consider the following procedure: upon being given a <script type="math/tex">n</script>-length string, proceed further only if it is an all-ones string (reject if not). Then, simply query oracle A all possible <script type="math/tex">2^n</script> strings of length <script type="math/tex">n</script>, and accept only if the number is odd. All this can easily be done by a TM having space polynomial in the size of input.</p>
+
+<h2 id="second-step-showing-existence-of-an-opolylogn-sized-parity-computing-circuit">Second Step: Showing existence of an <script type="math/tex">O(polylog(n))</script> sized parity-computing circuit</h2>
+<p>We’ll be showing this under the assumption that <script type="math/tex">L^A</script> is in <script type="math/tex">\mathbf{PH^A}</script>. As stated above, this implies that <script type="math/tex">L^A \in \Sigma_i^{p, A}</script>. This means that:</p>
+
+<script type="math/tex; mode=display">x \in L^A \iff \{ \exists y_1 \forall y_2 \ldots Q_iy_i s.t. M^A(y_1, y_2, \ldots , y_i, x) = 1\}</script>
+
+<p>where <script type="math/tex">M^A</script> is a TM with the modification that is has access to oracle A. Next, we claim that:</p>
+
+<script type="math/tex; mode=display">M^A(y_1, y_2, ... y_i, x) = \exists r \forall s \overline{M^A}(y_1, y_2, ... y_i, r, s, x)</script>
+
+<p>Where <script type="math/tex">\overline{M^A}</script> is similar to <script type="math/tex">M^A</script>, but with two modifications: one, it can only make one oracle query (<script type="math/tex">M^A</script>, of course, can make a polynomial number of queries to the oracle), and two, it has two additional inputs. Note the trade off here: <script type="math/tex">\overline{M^A}</script> is ‘equal’ in power to <script type="math/tex">M^A</script>, even though the number of queries which can be asked has been restricted. This is because we have now ‘ascended’ two levels higher in the polynomial hierarchy. But why should the trade-off be true?</p>
+
+<p>To see this, consider the machine <script type="math/tex">M^O</script>, whose computations are identical in nature to <script type="math/tex">M^A</script>, except that we can swap in any oracle we want. Now fix an input <script type="math/tex">x</script>, along with some valid combination of <script type="math/tex">y_1, ... y_i</script>, and then think of the computation of a certain TM <script type="math/tex">M^O</script> in the following manner: Each time the TM enters into a state where it queries the oracle, it can end up in one of two states, depending upon the oracle (or, more precisely, its answer to that query). Therefore, if we decide that we want to ‘track’ all possible ‘computational paths’ down which the TM might go, we will notice that we get a binary tree. Each path will correspond to a different oracle. Furthermore, as long as the inputs are fixed, the computational path taken by the TM is wholly dependent on the responses of the oracle (think about why this is true).</p>
+
+<p>Now, suppose we fix an input <script type="math/tex">x</script> which is in <script type="math/tex">L^A</script>, and also some combination of <script type="math/tex">y_1, ..., y_i</script>, which automatically fixes a corresponding computation graph for <script type="math/tex">M^O</script>. Recalling the definition of <script type="math/tex">\Sigma_i^{p, A}</script>, we can see that <script type="math/tex">M^A</script> must output <script type="math/tex">1</script> no matter what <script type="math/tex">y_1, ..., y_i</script> we have chosen. Therefore, since we now know that there exists at least one oracle for which <script type="math/tex">M^O</script> outputs 1, we can be sure that there exists a branch in the graph whose query-response pairs at each ‘branching’ matches the response of oracle A, when it is queried that particular query. This branch is the exact branch taken by <script type="math/tex">M^A</script>. Additionally, the state at the end of the path will be an accepting one.</p>
+
+<p>Now, it is easier to see how the two machines are equivalent. Take ‘<script type="math/tex">r</script>’ to be an accepting path, which is characterized by a sequence of query-response pairs, and allow ‘<script type="math/tex">s</script>’ to range over all possible queries. Therefore, given a particular <script type="math/tex">r</script> and <script type="math/tex">s</script>, what <script type="math/tex">\overline{M^A}</script> will do is it will simulate <script type="math/tex">M^A</script>, and each time it reaches a point where it has to query the oracle, it just uses the corresponding response from the sequence represented by ‘<script type="math/tex">r</script>’. In case the query matches the query represented by ‘<script type="math/tex">s</script>’, <script type="math/tex">\overline{M^A}</script> will actually query the oracle and indeed verify that the query-response pair is indeed right. If the response does not match the one given by the oracle, then the machine rejects (this is the only case where <script type="math/tex">\overline{M^A}</script> will reject, and if <script type="math/tex">x</script> does not belong to <script type="math/tex">L^A</script>, there will be an incorrect query response pair in ‘<script type="math/tex">r</script>’, and a corresponding query ‘<script type="math/tex">s</script>’, so <script type="math/tex">\overline{M^A}</script> will reject when it comes to that ‘<script type="math/tex">s</script>’). Stepping back, it is easy to see that if <script type="math/tex">x</script> actually belongs to <script type="math/tex">L^A</script>, then <script type="math/tex">\overline{M^A}</script> will, by iterating through all possible queries, chance upon each query specified in the sequence represented by ‘<script type="math/tex">r</script>’, and will verify the whole sequence correctly.</p>
+
+<p>A thing to note here is that <script type="math/tex">\exists r \text{ } \forall s \overline{M^A}(y_1, y_2, ... y_i, r, s, x)</script> is equivalent to <script type="math/tex">\forall s \text{ } \exists r \overline{M^A}(y_1, y_2, ... y_i, r, s, x)</script> since the variables ‘<script type="math/tex">r</script>’ and ‘<script type="math/tex">s</script>’ are unrelated to each other. Also note that this switching is not possible in every case. For example, the <script type="math/tex">MIN-CNF</script> problem described above, lies in <script type="math/tex">\Pi_2^p</script>, but does not lie in <script type="math/tex">\Sigma_2^p</script> (at least, we don’t know that it does), because switching the variables is not possible in this case.</p>
+
+<p>We are in a position to go a step further and claim that <script type="math/tex">L^A</script> in fact lies in <script type="math/tex">\Sigma_{i+1}^{p,A}</script> (with regards to the <script type="math/tex">\overline{M^A}</script> machine, that is. It is trivially in  <script type="math/tex">\Sigma_{i+1}^{p,A}</script> for the <script type="math/tex">M^A</script> machine). Depending upon whether <script type="math/tex">Q_i</script> is <script type="math/tex">\forall</script> or <script type="math/tex">\exists</script>, we replace <script type="math/tex">M^A(...)</script> with the equivalent <script type="math/tex">\forall s \text{ } \exists r \text{ } \overline{M^A}(...)</script> or <script type="math/tex">\exists r \text{ } \forall s \text{ } \overline{M^A}(...)</script> version, and then the two consecutive universal (or existential) quantifiers can be merged into one.</p>
+
+<p>We are now almost ready to construct the parity-computing circuit, we just need a couple of things in order.</p>
+
+<p>First, think of the following NP statement:</p>
+
+<script type="math/tex; mode=display">x \in L \iff \exists y \text{ } M(x, y) = 1</script>
+
+<p>This can be thought of as (I hope you will forgive me for the bad drawings that follow!):</p>
+
+<p><img src="../../../../assets/img/exists.png" alt="NP circuit" /></p>
+
+<p>where the <script type="math/tex">\exists</script> node acts like the OR gate, outputting <script type="math/tex">1</script> only when at least one of <script type="math/tex">M(x, y_i)</script> evaluates to <script type="math/tex">1</script>. You can think of a similar construction for coNP:</p>
+
+<p><img src="../../../../assets/img/forall.png" alt="coNP circuit" /></p>
+
+<p>A construction for <script type="math/tex">\Sigma_2^p</script> will look like:</p>
+
+<p><img src="../../../../assets/img/composite.png" alt="Sigma_p2 circuit" /></p>
+
+<p>Now, extending this concept a bit further, we can think of any <script type="math/tex">\Sigma_i^p</script> computation as a tree of nodes, with the levels alternating between <script type="math/tex">\exists</script> and <script type="math/tex">\forall</script>. Each of the leaves would then correspond to a computation, with the inputs as some particular combination of <script type="math/tex">y_1,...y_n</script>. It is quite easy to see that the construction outputs <script type="math/tex">1</script> if and only if <script type="math/tex">\exists y_1... M^A(y_1, ..)</script> evaluates to true.</p>
+
+<p>Now, consider the <script type="math/tex">\Sigma_{i+1}^p</script> computation where we use <script type="math/tex">\overline{M^A}(y_1, y_2, ..., y_{i+1}, x)</script>. Each particular computation’s output, it turns out, can be associated with the response of the query it makes to the oracle during the course of its computation (Remember, <script type="math/tex">\overline{M^A}</script> only makes a single query).</p>
+
+<p>The query made to the oracle is one of <script type="math/tex">\approx 2^n</script> possible queries, which can be denoted by <script type="math/tex">q_1, q_2, ..., q_{2^n}</script>, and their corresponding responses by <script type="math/tex">r_1, r_2, ..., r_{2^n}</script>. Suppose during computing <script type="math/tex">\overline{M^A}(y_1, y_2, ..., y_{i+1}, x)</script>, the machine queries the oracle for <script type="math/tex">q_j</script> and receives <script type="math/tex">r_j</script> as response. Since the output of <script type="math/tex">\overline{M^A}(y_1, y_2, ..., y_{i+1}, x)</script> and the quantity <script type="math/tex">r_j</script> are both boolean variables, either one of <script type="math/tex">\overline{M^A}(y_1, y_2, ..., y_{i+1}, x) = r_j</script> or <script type="math/tex">\overline{M^A}(y_1, y_2, ..., y_{i+1}, x) = \overline{r_j}</script> holds true.</p>
+
+<p>It follows that we can label the leaves of the computation tree with <script type="math/tex">r_j</script> (or <script type="math/tex">\overline{r_j}</script>) now (note that this does not mean that the construction only has <script type="math/tex">\approx 2^n</script> leaves. In fact, the number of leaves far exceeds that number). Now, by having an understanding of how we can construct a ‘<script type="math/tex">\forall\exists</script> circuit’, and knowing that the particular construction we created outputs <script type="math/tex">1</script> only when the number of <script type="math/tex">n</script>-length strings in A is odd, and by modifying the circuit by replacing every <script type="math/tex">\forall</script> node with an <script type="math/tex">AND</script> gate, every <script type="math/tex">\exists</script> node with an <script type="math/tex">OR</script> gate, we get a circuit which computes the parity of the <script type="math/tex">2^n</script> bits represented by the bits (<script type="math/tex">r_j</script> or <script type="math/tex">\overline{r_j}</script>) at the leaves of the circuit.</p>
+
+<p>Going the other way, we can look at it as follows: Given <script type="math/tex">2^n</script> input bits (if the number of bits in the input isn’t a power of <script type="math/tex">2</script>, pad it with zeroes. The parity value won’t change!), label them as <script type="math/tex">r_1, r_2, ..., r_{2^n}</script>. Now arrange all the <script type="math/tex">2^n</script> <script type="math/tex">n</script>-length strings in lexicographical order, and add the <script type="math/tex">i</script>th string to a set if <script type="math/tex">r_i = 1</script>. This set is now the language <script type="math/tex">A</script>. Therefore, <script type="math/tex">L^A</script> will contain <script type="math/tex">1^n</script> only if parity of the input bits is equal to 1, and everything else follows. It might be the most convoluted way ever to calculate parity, but it works.</p>
+
+<p>One other useful thing of note is that during the computation of <script type="math/tex">M^A</script>, where <script type="math/tex">M^A</script> has to decide whether or not a given <script type="math/tex">x</script> is present in <script type="math/tex">L^A</script> or not, it will query the oracle of every possible <script type="math/tex">n</script>-length string, <script type="math/tex">n</script> being the length of <script type="math/tex">x</script>. How do we know this? Because of how <script type="math/tex">L^A</script> is defined, the inclusion of string <script type="math/tex">x</script> in it depends upon the fact that it is completely made up of ones, and that an odd number of <script type="math/tex">n</script>-length strings are present in A. Therefore, since <script type="math/tex">M^A</script> does not have any ‘built-in’ knowledge of language A, and because of the fact that it can only know anything all about A is by querying the oracle, and because if the machine misses out on querying even a single <script type="math/tex">n</script>-length string it may give the wrong answer, it has no choice but to query every possible string. For those in the know, this is a consequence of the fact that the communication complexity of the parity function is <script type="math/tex">n</script>.</p>
+
+<p>The only thing left to do is to derive the size of the circuit. Since every variable <script type="math/tex">y_i</script> is of length at most polynomial in <script type="math/tex">n</script>, assume it is of length at most <script type="math/tex">n^k</script>, for some <script type="math/tex">k</script>. Then, it follows that every internal node must have <script type="math/tex">2^{n^k}</script> children, one for each possible value of <script type="math/tex">y_i</script>. Using this, the size of the circuit comes out to be <script type="math/tex">O(2^{n(log^k(2^n))})</script>. Since we are using a <script type="math/tex">2^n</script> sized string as input, if we replace <script type="math/tex">2^n</script> by <script type="math/tex">n'</script>, we have an <script type="math/tex">O(n'^{(log^k(n'))})</script> sized circuit for computing parity.</p>
+
+<p>This proof not just proves the existence of a <script type="math/tex">O(n^{log^k(n)})</script> sized circuit for computing the parity of <script type="math/tex">n</script> bits, but gives details for constructing one as well. Of course, this is under the assumption that <script type="math/tex">L^A</script> lies in <script type="math/tex">\mathbf{PH^A}</script>.</p>
+
+<p>The second section of the paper essentially proves the contrapositive of the above statement. It shows that a <script type="math/tex">O(n^{log^k(n)})</script> sized circuit for computing parity of <script type="math/tex">n</script> bits does not exist, thus <script type="math/tex">L^A \not\in \mathbf{PH^A}</script>, proving the existence of an oracle relative to which <script type="math/tex">\mathbf{PH} \subset \mathbf{PSPACE}</script>.</p>
+
+<p>There are a few additional implications about the second result in the paper, like multiplication and the majority function don’t lie in <script type="math/tex">AC^0</script> as well, but the most significant implication, by far, is the one discussed above.</p>
+
+<h2 id="conclusion">Conclusion</h2>
+<p>Oracle separations are an interesting way to glean evidence about things which we have no idea how tackle, given the available tools. A much more recent oracle separation was shown by <a href="https://engineering.princeton.edu/faculty/ran-raz">Ran Raz</a> and <a href="http://www.avishaytal.org/">Avishay Tal</a> in 2018, between <a href="https://en.wikipedia.org/wiki/BQP"><script type="math/tex">BQP</script></a> and <script type="math/tex">PH</script> (it showed <script type="math/tex">BQP^A \not\subset PH^A</script>, which is surprising enough in its own right).</p>
+
+
+
+
+
+    </div>
+
+  </div>
+
+</body>
+</html>
