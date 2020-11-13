@@ -3,4 +3,6 @@ layout: page
 title: Contact
 ---
 
-Email: [nshagri@iitk.ac.in](mailto:nshagri@iitk.ac.in)
+Email: [nshagri@cse.iitk.ac.in](mailto:nshagri@cse.iitk.ac.in)
+
+Alternate email: [nikhilshagri@gmail.com](nikhilshagri@gmail.com)
